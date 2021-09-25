@@ -5,6 +5,9 @@ class Trees:
     def __init__(self):
         self.noise = PerlinNoise(seed=4)
 
+        self.trees = Entity()
+        self.treesCounter = 0
+
     def checkTree(self, _x, _y, _z):
         freq = 5
         amp = 100

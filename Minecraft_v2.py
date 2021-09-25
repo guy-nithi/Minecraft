@@ -8,7 +8,7 @@ from perlin_noise import PerlinNoise
 from nMap import nMap
 from cave_system import Caves
 from tree_system import Trees
-from mining_system import Mining_system
+from mining_system1 import Mining_system
 
 app = Ursina()
 
@@ -244,12 +244,16 @@ def generateShell():
         # terra = genPerlin(subject.x,subject.z)
         terra = varch.tDic.get( 'x'+str((floor(subject.x)))+
                                 'y'+str((floor(subject.y+i)))+
-                                'z'+str((floor(subject.z))))
+                                'z'+str((floor(subject.z+0.5))))
+        terraTop = varch.tDic.get( 'x'+str((floor(subject.x)))+
+                                   'y'+str((floor(subject.y+i+1)))+
+                                   'z'+str((floor(subject.z+0.5))))
         if terra != None and terra != 'gap':
-            # print('TERRAIN FOUND! ' + str(terra + 2))
-            target_y = floor(subject.y+i)# + 2
-            gravityON = False
-            break
+            if terraTop == None or terraTop == 'gap':
+                # print('TERRAIN FOUND! ' + str(terra + 2))
+                target_y = floor(subject.y+i)# + 2
+                gravityON = False
+                break
 
     if gravityON==True:
         # This means we're falling!

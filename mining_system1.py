@@ -1,3 +1,4 @@
+from random import randrange, randint, random
 from ursina import Entity, color, Vec3
 from numpy import floor
 
@@ -64,12 +65,12 @@ class Mining_system:
 
 
         if key == 'f': self.buildMode *= -1
-        """
-        if key == '1': blockType=BTYPE.GRASS
-        if key == '2': blockType=BTYPE.STONE
-        if key == '3': blockType=BTYPE.DIRT
-        if key == '4': blockType=BTYPE.REDSTONE
-        """    
+
+        if key == '1': self.blockType=0
+        if key == '2': self.blockType=1
+        if key == '3': self.blockType=2
+        if key == '4': self.blockType=3
+        if key == '5': self.blockType=4
 
     # This is called from the main update loop.
     def buildTool(self):
@@ -85,6 +86,7 @@ class Mining_system:
         self.bte.color = self.blockTypes[self.blockType]
 
     def mineSpawn(self):
+        from copy import copy # For copying colours.
         # Spawn one block below dig position?
         if self.tDic.get('x'+str(self.bte.x)+'y'+str(self.bte.y-1)+'z'+str(self.bte.z)) == None:
             
@@ -95,57 +97,75 @@ class Mining_system:
             # Shrink spawned block block so that it
             # matches the size of ordinary terrain.
             e.scale *= 0.99999
-            e.color = self.blockTypes[0]
+            e.color = copy(self.blockTypes[0])
+            # Adjust the tintt of this block;s colour.
+            shade = random()
+            e.color[0] *= shade
+            e.color[1] *= shade
+            e.color[2] *= shade
             e.position = self.bte.position
             e.y -= 1
+            # Add random rotation.
+            e.rotation_y = (90 * randint(0,3))
+            e.rotation_z = (90 * randint(0,3))
+            e.rotation_x = (90 * randint(0,3))
             # Parent spawned cube into build entity.
             e.parent = self.builds
             # Record newly spawned block on dictionary.
             self.tDic['x'+str(self.bte.x)+'y'+str(e.y)+'z'+str(self.bte.z)] = e.y
+            self.builds.combine()
 
-        # OK -- now spawn 4 'cave wall' cubes.
-        # For each cube, first check whether:
-        # 1) No terrain there already
-        # 2) No gaps
-        # 3) No terrain below this pos
-        x = self.bte.x
-        y = self.bte.y
-        z = self.bte.z
-        pos1 = (x+1,y,z)
-        pos2 = (x-1,y,z)
-        pos3 = (x,y,z+1)
-        pos4 = (x,y,z-1)
-        spawnPos = []
-        spawnPos.append(pos1)
-        spawnPos.append(pos2)
-        spawnPos.append(pos3)
-        spawnPos.append(pos4)
-        for i in range(4):
-            x = spawnPos[i][0]
-            z = spawnPos[i][2]
-            y = spawnPos[i][1]
+            # OK -- now spawn 4 'cave wall' cubes.
+            # For each cube, first check whether:
+            # 1) No terrain there already
+            # 2) No gaps
+            # 3) No terrain below this pos
+            x = self.bte.x
+            y = self.bte.y
+            z = self.bte.z
+            pos1 = (x+1,y,z)
+            pos2 = (x-1,y,z)
+            pos3 = (x,y,z+1)
+            pos4 = (x,y,z-1)
+            spawnPos = []
+            spawnPos.append(pos1)
+            spawnPos.append(pos2)
+            spawnPos.append(pos3)
+            spawnPos.append(pos4)
+            for i in range(4):
+                x = spawnPos[i][0]
+                z = spawnPos[i][2]
+                y = spawnPos[i][1]
 
-            # We can ask None both times because
-            # this covers both gaps and terrain
-            # being in these position(i.e
-            # potential cave wall and below
-            # potential cave wall.
-            if self.tDic.get('x'+str(x)+'y'+str(y)+'z'+str(z)) == None and \
-                self.tDic.get('x'+str(x)+'y'+str(y-1)+'z'+str(z)) == None:
-                    e = Entity(model=self.cubeModel, texture=self.buildTex)
-                    # Shrink spawned block block so that it
-                    # matches the size of ordinary terrain.
-                    e.scale *= 0.99999
-                    e.color = self.blockTypes[0]
-                    e.position = spawnPos[i]
-                    # Parent spawned cube into build entity.
-                    e.parent = self.builds
-                    # Record newly spawned block on dictionary.
-                    self.tDic['x'+str(x)+'y'+str(y)+'z'+str(z)] = e.y
+                # We can ask None both times because
+                # this covers both gaps and terrain
+                # being in these position(i.e
+                # potential cave wall and below
+                # potential cave wall.
+                if self.tDic.get('x'+str(x)+'y'+str(y)+'z'+str(z)) == None and \
+                    self.tDic.get('x'+str(x)+'y'+str(y-1)+'z'+str(z)) == None:
+                        e = Entity(model=self.cubeModel, texture=self.buildTex)
+                        # Shrink spawned block block so that it
+                        # matches the size of ordinary terrain.
+                        e.scale *= 0.99999
+                        e.color = self.blockTypes[0]
+                        e.position = spawnPos[i]
+                        # Parent spawned cube into build entity.
+                        e.parent = self.builds
+                        # Record newly spawned block on dictionary.
+                        self.tDic['x'+str(x)+'y'+str(y)+'z'+str(z)] = e.y
 
     # Place a block at the bte's position
     def build(self):
         if self.buildMode == -1: return
+
+        # Is there already a block here?
+        whatsHere = self.tDic.get('x'+str(self.bte.x)+'y'+str(self.bte.y)+'z'+str(self.bte.z))
+        # Is so, return. No buildy
+        if whatsHere != 'gap' and whatsHere != None:
+            return
+
+
         e = Entity(model=self.cubeModel, position =self.bte.position)
         # e.collider = 'box'
         # e.texture = self.stoneTex
@@ -153,7 +173,7 @@ class Mining_system:
         e.scale *= 0.99999
         # Netherite colour for testing :)
         e.color = self.blockTypes[4]
-        # e.color = self.blockTypes[self.blockType]
+        e.color = self.blockTypes[self.blockType]
         e.parent = self.builds
         self.tDic['x'+str(e.x)+'y'+str(e.y)+'z'+str(e.z)] = 'b'
         self.builds.combine()
@@ -163,7 +183,7 @@ class Mining_system:
     def mine(self):
 
         vChange = False
-
+        totalV = 0
         for v in self.builds.model.vertices:
             if (v[0] >=self.bte.x - 0.5 and
                 v[0] <=self.bte.x + 0.5 and
@@ -174,11 +194,14 @@ class Mining_system:
 
                 v[1] = 9999
                 vChange = True
-                self.tDic['x'+str(self.bte.x)+'y'+str(self.bte.y)+'z'+str(self.bte.z)] = 'gap'
+                totalV += 1
+                if totalV >= 36: break
 
         if vChange == True:
+            
             whatsHere = self.tDic.get('x'+str(self.bte.x)+'y'+str(self.bte.y)+'z'+str(self.bte.z))
-            if whatsHere != 'b' and whatsHere == 'gap':
+            self.tDic['x'+str(self.bte.x)+'y'+str(self.bte.y)+'z'+str(self.bte.z)] = 'gap'
+            if whatsHere != 'b':
                 self.mineSpawn()
                 self.builds.combine()
             # Update builds model Entity so that we
@@ -204,12 +227,12 @@ class Mining_system:
                     # give illusion of being destroyed
                     v[1] = 9999
                     vChange = True
-                    self.tDic['x'+str(self.bte.x)+'y'+str(self.bte.y)+'z'+str(self.bte.z)] = 'gap'
                     totalV += 1
                     # The mystery of 36 vertices!! :o
                     # print('TotalV = ' + str(totalV))
                     if totalV==36: break
             if vChange == True:
+                self.tDic['x'+str(self.bte.x)+'y'+str(self.bte.y)+'z'+str(self.bte.z)] = 'gap'
                 self.mineSpawn()
                 # Now that we've spawned what (if anything)
                 # we need to, update subset model. Done.
