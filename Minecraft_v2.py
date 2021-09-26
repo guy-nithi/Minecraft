@@ -102,9 +102,12 @@ def input(key):
 
     if key == 'q' or key == 'escape':
         quit()
-    if key ==  'g': 
+    if key == 'g': 
         generating *= -1
         canGenerate *= -1
+    if varch.buildMode == 1:
+        generating = -1
+        canGenerate = -1
 
 def update():
     global prevZ, prevX, prevTime, genSpeed, perCycle
@@ -249,11 +252,14 @@ def generateShell():
                                    'y'+str((floor(subject.y+i+1)))+
                                    'z'+str((floor(subject.z+0.5))))
         if terra != None and terra != 'gap':
+            gravityON = False
             if terraTop == None or terraTop == 'gap':
                 # print('TERRAIN FOUND! ' + str(terra + 2))
                 target_y = floor(subject.y+i)# + 2
-                gravityON = False
                 break
+
+            subject.x -= 0.6
+            subject.z -= 0.6
 
     if gravityON==True:
         # This means we're falling!

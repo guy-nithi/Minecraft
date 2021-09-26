@@ -5,6 +5,7 @@ class Trees:
     def __init__(self):
         self.noise = PerlinNoise(seed=4)
 
+        # Parent of trees for optimization.
         self.trees = Entity()
         self.treesCounter = 0
 
@@ -25,3 +26,9 @@ class Trees:
         trunk.parent = tree
         tree.y += 4
         tree.rotation_y = randint(0,360)
+
+        tree.parent = self.trees
+        self.treesCounter += 1
+        if self.treesCounter % 4 == 0:
+            self.trees.combine()
+            self.trees.collider = self.trees.model
