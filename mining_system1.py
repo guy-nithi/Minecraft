@@ -3,7 +3,7 @@ from ursina import Entity, color, Vec3
 from numpy import floor
 
 class Mining_system:
-    def __init__(self, _subject, _axe, _camera, _subsets):
+    def __init__(self, _subject, _axe, _camera, _subsets, _megasets):
 
         # We create a reference to these here,
         # so that we can use them in this buildTool()
@@ -18,6 +18,7 @@ class Mining_system:
         self.builds = Entity(model=self.cubeModel,texture=self.buildTex)
 
         self.subsets = _subsets
+        self.megasets = _megasets
 
         self.wireTex = 'wireframe.png'
         self.stoneTex = 'grass_mono.png'
@@ -244,5 +245,34 @@ class Mining_system:
                 # Now that we've spawned what (if anything)
                 # we need to, update subset model. Done.
                 self.subsets[s].model.generate()
+                self.builds.combine()
+                return
+
+        totalV = 0
+        for s in range(len(self.megasets)):
+            vChange = False
+            for v in self.megasets[s].model.vertices:
+                if (v[0] >=self.bte.x - 0.5 and
+                    v[0] <=self.bte.x + 0.5 and
+                    v[1] >=self.bte.y - 0.5 and
+                    v[1] <=self.bte.y + 0.5 and
+                    v[2] >=self.bte.z - 0.5 and
+                    v[2] <=self.bte.z + 0.5):
+                    # Yes!
+                    # v[1] -= 1
+                    # move vertex high into air to
+                    # give illusion of being destroyed
+                    v[1] = 9999
+                    vChange = True
+                    totalV += 1
+                    # The mystery of 36 vertices!! :o
+                    # print('TotalV = ' + str(totalV))
+                    if totalV==36: break
+            if vChange == True:
+                self.tDic['x'+str(self.bte.x)+'y'+str(self.bte.y)+'z'+str(self.bte.z)] = 'gap'
+                self.mineSpawn()
+                # Now that we've spawned what (if anything)
+                # we need to, update subset model. Done.
+                self.megasets[s].model.generate()
                 self.builds.combine()
                 return
