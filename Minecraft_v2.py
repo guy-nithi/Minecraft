@@ -437,7 +437,11 @@ def generateShell():
 chickenModel = load_model('chicken.obj')
 vincent = Entity(model=chickenModel,scale=1,x=22,z=16,y=4,texture='chicken.png',double_sided=True)
 
+vincent2 = Entity(model=chickenModel,scale=1,x=99,z=16,y=4,texture='chicken.png',double_sided=True)
+
 cyan_axolotl = Entity(model=axoModel,scale=10,x=-22,z=16,y=4,texture=axoTex,double_sided=True)
+
+cyan2_axolotl = Entity(model=axoModel,scale=10,x=-99,z=16,y=4,texture=axoTex,double_sided=True)
 
 generateShell()
 
