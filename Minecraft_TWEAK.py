@@ -8,7 +8,7 @@ from perlin_noise import PerlinNoise
 from nMap import nMap
 from cave_system import Caves
 from tree_system import Trees
-from mining_system1 import Mining_system
+from mining_system1_TWEAK import Mining_system
 
 app = Ursina()
 
